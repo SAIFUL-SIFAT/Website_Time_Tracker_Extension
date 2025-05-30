@@ -4,14 +4,18 @@ document.addEventListener('DOMContentLoaded', () => {
         timeDisplay.innerHTML = '';
 
         // Check if timeSpent data exists
-        if (data.timeSpent) {
+        if (data.timeSpent && Object.keys(data.timeSpent).length > 0) {
+            let index = 1;
             for (const [domain, time] of Object.entries(data.timeSpent)) {
                 const timeElement = document.createElement('div');
-                timeElement.textContent = `${domain}: ${time.toFixed(2)} seconds`;
+                timeElement.textContent = `${index}. ${domain}: ${time.toFixed(2)} s`;
                 timeDisplay.appendChild(timeElement);
+                index++;
             }
         } else {
-            timeDisplay.textContent = "No data available.";
+            const noDataElement = document.createElement('div');
+            noDataElement.textContent = "No website data available.";
+            timeDisplay.appendChild(noDataElement);
         }
     });
 });

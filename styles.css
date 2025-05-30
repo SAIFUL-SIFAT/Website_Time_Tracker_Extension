@@ -1,15 +1,44 @@
-body {
-    font-family: Arial, sans-serif;
-    width: 200px;
-    padding: 10px;
-}
-
-h1 {
-    font-size: 16px;
-    margin: 0;
-}
-
-#timeDisplay {
-    margin-top: 10px;
-    font-size: 14px;
-}
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      width: 240px;
+      padding: 20px;
+      margin: 0;
+      background: #f4f4f9;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    
+    .card {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      width: 80%;
+    }
+    
+    h1 {
+      font-size: 22px;
+      color: #333;
+      margin-bottom: 15px;
+    }
+    
+    .time-entry {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 18px;
+      color: #444;
+      margin-bottom: 12px;
+    }
+    
+    .time-entry .domain {
+      font-weight: bold;
+      font-size: 18px;
+    }
+    
+    .time-entry .duration {
+      font-weight: bold;
+      color: #202449;
+      font-size: 18px;
+    }

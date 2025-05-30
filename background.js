@@ -4,7 +4,7 @@ let currentDomain = null;
 let startTime = null;
 // Helper to save data
 function saveTimeSpent(){
-     chome.storage.local.set({timeSpent});
+     chrome.storage.local.set({timeSpent});
 }
 // Extract domain from a URL
 function getDomain(url) {

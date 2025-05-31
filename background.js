@@ -2,6 +2,7 @@ let timeSpent = {};
 let currentTabId = null;
 let currentDomain = null;
 let startTime = null;
+let intervalId = null;
 
 // Helper to save data
 function saveTimeSpent() {
@@ -17,11 +18,11 @@ function loadTimeSpent(callback) {
   chrome.storage.local.get('timeSpent', (data) => {
     if (chrome.runtime.lastError) {
       console.error("Error loading timeSpent:", chrome.runtime.lastError);
-      callback({});
-      return;
+      timeSpent = {};
+    } else {
+      timeSpent = data.timeSpent || {};
     }
-    timeSpent = data.timeSpent || {};
-    callback(timeSpent);
+    callback();
   });
 }
 
@@ -36,21 +37,25 @@ function getDomain(url) {
   }
 }
 
-// Called when switching tabs or when a new tab is loaded
-function trackTimeSwitch(newTabId, newUrl) {
-  const now = Date.now();
-
-  // Save time for the previous domain
-  if (currentTabId !== null && currentDomain && startTime) {
+// Update time for the current domain
+function updateTime() {
+  if (currentDomain && startTime) {
+    const now = Date.now();
     const timeElapsed = (now - startTime) / 1000; // Time in seconds
     timeSpent[currentDomain] = (timeSpent[currentDomain] || 0) + timeElapsed;
+    startTime = now; // Reset startTime to prevent double-counting
     saveTimeSpent();
   }
+}
+
+// Called when switching tabs or when a new tab is loaded
+function trackTimeSwitch(newTabId, newUrl) {
+  updateTime(); // Save time for the previous domain
 
   // Update to the new tab's details
   currentTabId = newTabId;
   currentDomain = getDomain(newUrl);
-  startTime = currentDomain ? now : null;
+  startTime = currentDomain ? Date.now() : null;
 }
 
 // Check active tab periodically
@@ -78,10 +83,24 @@ function startTracking() {
         trackTimeSwitch(tabs[0].id, tabs[0].url);
       }
     });
-    // Check active tab every 5 seconds (adjust as needed)
-    setInterval(checkActiveTab, 5000);
+    // Check active tab and update time every 5 seconds
+    if (!intervalId) {
+      intervalId = setInterval(() => {
+        updateTime(); // Update time for current domain
+        checkActiveTab(); // Check if tab/domain changed
+      }, 5000);
+    }
   });
 }
+
+// Stop tracking and save final time
+// function stopTracking() {
+//   updateTime(); // Save time for the current domain
+//   if (intervalId) {
+//     clearInterval(intervalId);
+//     intervalId = null;
+//   }
+// }
 
 // Tab switched
 chrome.tabs.onActivated.addListener((activeInfo) => {
@@ -99,9 +118,16 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   }
 });
 
-// When browser window/tab is closed
+// When a tab is closed
+chrome.tabs.onRemoved.addListener((tabId) => {
+  if (tabId === currentTabId) {
+    trackTimeSwitch(null, null);
+  }
+});
+
+// When browser window is closed
 chrome.windows.onRemoved.addListener(() => {
-  trackTimeSwitch(null, null);
+  stopTracking();
 });
 
 // On extension startup
@@ -112,4 +138,15 @@ chrome.runtime.onStartup.addListener(() => {
 // On extension installed or updated
 chrome.runtime.onInstalled.addListener(() => {
   startTracking();
+});
+
+// Handle browser focus changes
+chrome.windows.onFocusChanged.addListener((windowId) => {
+  if (windowId === chrome.windows.WINDOW_ID_NONE) {
+    // Browser lost focus (minimized or no windows), save current time
+    updateTime();
+  } else {
+    // Browser regained focus, ensure tracking is active
+    checkActiveTab();
+  }
 });

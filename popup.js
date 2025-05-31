@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
           timeString += `${seconds} s`;
           const timeElement = document.createElement('div');
-          timeElement.textContent = `${index}. ${domain}: ${timeString}`;
+          timeElement.innerHTML = `${index}. <strong>${domain}</strong>: ${timeString}`;
           timeDisplay.appendChild(timeElement);
           index++;
         }

@@ -117,6 +117,12 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     trackTimeSwitch(tabId, tab.url);
   }
 });
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.action === 'resetMemory') {
+    timeSpent = {}; // Clear in-memory time data
+    console.log("In-memory timeSpent object reset.");
+  }
+});
 
 // When a tab is closed
 chrome.tabs.onRemoved.addListener((tabId) => {

@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
   const timeDisplay = document.getElementById('timeDisplay');
+  const resetButton = document.getElementById('resetButton');
 
   function updateTimeDisplay() {
     chrome.storage.local.get('timeSpent', (data) => {
@@ -35,8 +36,23 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+ function resetTimeSpent() {
+  chrome.storage.local.set({ 'timeSpent': {} }, () => {
+    console.log('Time spent data reset.');
+
+    // Send a message to background script to reset in-memory object
+    chrome.runtime.sendMessage({ action: 'resetMemory' });
+
+    updateTimeDisplay();
+  });
+}
+
+
   // Initial display
   updateTimeDisplay();
   // Update the time display every 5 seconds
   setInterval(updateTimeDisplay, 5000);
+
+  // Add click event listener to the reset button
+  resetButton.addEventListener('click', resetTimeSpent);
 });
